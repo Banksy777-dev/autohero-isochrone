@@ -1,0 +1,465 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Auto Hero — Dealer Settings (Isochrone Prototype)</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif}
+body{background:#f2f2f0;min-height:100vh}
+
+/* Shell */
+.shell{display:flex;flex-direction:column;min-height:100vh}
+
+/* Top bar */
+.topbar{background:#fff;border-bottom:1px solid #e0e0e0;padding:10px 24px;display:flex;align-items:center}
+.ah-logo{display:flex;align-items:center;gap:8px;text-decoration:none}
+.ah-logo-mark{width:32px;height:32px}
+.ah-logo-text{font-size:15px;font-weight:800;color:#1a1a2e;letter-spacing:-0.3px}
+.topbar-title{flex:1;text-align:center;font-size:16px;font-weight:700;color:#1a1a2e}
+
+/* Layout */
+.layout{display:flex;flex:1}
+
+/* Sidebar */
+.sidebar{width:200px;background:#1a1a2e;flex-shrink:0;display:flex;flex-direction:column}
+.sb-profile{padding:14px 12px 12px;border-bottom:1px solid rgba(255,255,255,0.07)}
+.sb-thumb{background:#252a42;border-radius:5px;height:88px;display:flex;align-items:center;justify-content:center;margin-bottom:8px;overflow:hidden}
+.sb-thumb-inner{text-align:center}
+.sb-thumb-inner .t1{font-size:9px;font-weight:700;color:#fff;letter-spacing:1.5px}
+.sb-thumb-inner .t2{font-size:7px;color:#aab;margin-top:1px}
+.sb-biz-name{font-size:11px;color:#99a;font-weight:500;line-height:1.4}
+.sb-nav{padding:8px 0;flex:1}
+.sb-item{display:flex;align-items:center;gap:10px;padding:8px 14px;font-size:12px;color:#99a;cursor:pointer;transition:background 0.1s}
+.sb-item:hover{background:rgba(255,255,255,0.05)}
+.sb-item.active{background:#e8001c;color:#fff}
+.sb-item svg{width:15px;height:15px;flex-shrink:0;opacity:0.75}
+.sb-item.active svg{opacity:1}
+.sb-sub{padding:4px 14px 4px 39px;font-size:11px;color:#667;cursor:pointer}
+.sb-sub:hover{color:#99a}
+
+/* Main */
+.main{flex:1;overflow:auto}
+.main-header{background:#fff;padding:16px 24px 0;border-bottom:1px solid #e8e8e8}
+.main-header h1{font-size:20px;font-weight:700;color:#1a1a2e;padding-bottom:12px}
+.tabs{display:flex;gap:0}
+.tab{padding:10px 18px;font-size:13px;color:#666;cursor:pointer;border-bottom:2px solid transparent;transition:color 0.15s}
+.tab:hover{color:#333}
+.tab.active{color:#e8001c;border-bottom-color:#e8001c;font-weight:500}
+
+.content{padding:20px 24px;max-width:960px}
+.section-label{font-size:13px;font-weight:700;color:#1a1a2e;margin-bottom:10px}
+.card{background:#fff;border:0.5px solid #e0e0e0;border-radius:6px;overflow:hidden;margin-bottom:20px}
+.row{display:flex;align-items:flex-start;padding:13px 20px;border-bottom:0.5px solid #f0f0f0}
+.row:last-child{border-bottom:none}
+.row-label{font-size:13px;color:#444;width:168px;flex-shrink:0;padding-top:8px;line-height:1.4}
+.row-label.blue{color:#1a6ec7;font-weight:600}
+.row-val{flex:1}
+.text-input{border:1px solid #ddd;border-radius:4px;height:34px;width:100%;background:#fafafa;font-size:13px;padding:0 10px;color:#333;outline:none;transition:border-color 0.15s}
+.text-input:focus{border-color:#1a6ec7;background:#fff}
+.tog-group{display:flex;gap:6px;flex-wrap:wrap}
+.tog{padding:6px 16px;border-radius:20px;border:1px solid #d8d8d8;font-size:12px;background:#fff;color:#555;cursor:pointer;transition:all 0.15s;white-space:nowrap}
+.tog:hover{border-color:#aaa}
+.tog.on{background:#1a1a2e;color:#fff;border-color:#1a1a2e}
+.new-tag{display:inline-block;background:#e8f4e8;color:#2e7d32;font-size:10px;font-weight:700;padding:2px 7px;border-radius:8px;margin-left:6px;vertical-align:middle;letter-spacing:0.3px}
+
+/* Range slider */
+.range-row{display:flex;align-items:center;gap:10px;margin:10px 0 12px}
+.range-row label{font-size:12px;color:#555;white-space:nowrap}
+input[type=range]{-webkit-appearance:none;appearance:none;height:4px;border-radius:2px;background:#ddd;flex:1;max-width:180px;outline:none;cursor:pointer}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:16px;height:16px;border-radius:50%;background:#1a6ec7;border:2.5px solid #fff;box-shadow:0 0 0 1.5px #1a6ec7;cursor:pointer}
+input[type=range]::-moz-range-thumb{width:16px;height:16px;border-radius:50%;background:#1a6ec7;border:2.5px solid #fff;cursor:pointer}
+.range-val{font-size:13px;font-weight:600;color:#1a6ec7;min-width:56px}
+
+/* Map */
+.map-wrap{border-radius:5px;overflow:hidden;border:1px solid #cfd8e0;position:relative;height:240px;background:#e8ecf0;margin-bottom:2px}
+.map-canvas{display:block;width:100%;height:100%}
+.map-ui-top{position:absolute;top:8px;right:8px;display:flex;background:#fff;border-radius:4px;border:0.5px solid #ccc;overflow:hidden;box-shadow:0 1px 3px rgba(0,0,0,0.08)}
+.map-btn{padding:4px 11px;font-size:11px;color:#555;cursor:pointer;transition:all 0.15s;font-weight:500}
+.map-btn:hover{background:#f0f0f0}
+.map-btn.on{background:#1a6ec7;color:#fff}
+.map-legend{position:absolute;bottom:8px;left:8px;background:rgba(255,255,255,0.94);border:0.5px solid #ccc;border-radius:4px;padding:7px 10px;box-shadow:0 1px 3px rgba(0,0,0,0.06)}
+.leg{display:flex;align-items:center;gap:7px;font-size:11px;color:#333;margin-bottom:4px}
+.leg:last-child{margin-bottom:0}
+.leg-sq{width:11px;height:11px;border-radius:2px;flex-shrink:0}
+.map-credit{position:absolute;bottom:4px;right:8px;font-size:10px;color:#aaa}
+.helper{font-size:11px;color:#888;margin-top:6px;line-height:1.5}
+
+/* Responsive */
+@media(max-width:700px){
+  .sidebar{display:none}
+  .topbar-title{text-align:left}
+  .range-row{flex-wrap:wrap}
+}
+</style>
+</head>
+<body>
+<div class="shell">
+
+  <!-- Top bar -->
+  <div class="topbar">
+    <a class="ah-logo" href="#">
+      <svg class="ah-logo-mark" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <polygon points="16,3 30,27 2,27" fill="#e8001c"/>
+        <polygon points="16,9 26,27 6,27" fill="#fff" opacity="0.15"/>
+      </svg>
+      <span class="ah-logo-text">AUTOHERO</span>
+    </a>
+    <div class="topbar-title">Auto Hero Roadside Assistance Sydney</div>
+  </div>
+
+  <div class="layout">
+
+    <!-- Sidebar -->
+    <div class="sidebar">
+      <div class="sb-profile">
+        <div class="sb-thumb">
+          <div class="sb-thumb-inner">
+            <div class="t1">AUTO HERO</div>
+            <div class="t2">24/7 ROADSIDE</div>
+            <div class="t2">ASSISTANCE</div>
+          </div>
+        </div>
+        <div class="sb-biz-name">Auto Hero Roadside<br>Assistance Sydney</div>
+      </div>
+      <div class="sb-nav">
+        <div class="sb-item">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9,22 9,12 15,12 15,22"/></svg>
+          Home
+        </div>
+        <div class="sb-item">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
+          Enquiries (0)
+        </div>
+        <div class="sb-item">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="3"/></svg>
+          Tyre Catalogue
+        </div>
+        <div class="sb-item">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
+          Add Top Sellers
+        </div>
+        <div class="sb-item">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.59 13.41l-7.17 7.17a2 2 0 01-2.83 0L2 12V2h10l8.59 8.59a2 2 0 010 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>
+          Sale Leads (2125)
+        </div>
+        <div class="sb-item">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+          Ad Performance
+        </div>
+        <div class="sb-item active">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+          My Details
+        </div>
+        <div class="sb-item">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
+          Marketing Tips
+        </div>
+        <div class="sb-item">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="3"/></svg>
+          Tyre Quote Pro
+        </div>
+        <div class="sb-sub">› Standard Tyre Quote</div>
+        <div class="sb-sub">› Staggered Tyre Quote</div>
+        <div class="sb-sub">› Past Quotes</div>
+      </div>
+    </div>
+
+    <!-- Main -->
+    <div class="main">
+      <div class="main-header">
+        <h1>Auto Hero Roadside Assistance Sydney</h1>
+        <div class="tabs">
+          <div class="tab active">Wentworth Point</div>
+          <div class="tab">Add a new location</div>
+        </div>
+      </div>
+
+      <div class="content">
+        <div class="section-label">Notification settings for quotes</div>
+        <div class="card">
+          <div class="row">
+            <div class="row-label">Contact name</div>
+            <div class="row-val"><input class="text-input" type="text" placeholder=""></div>
+          </div>
+          <div class="row">
+            <div class="row-label">Email</div>
+            <div class="row-val"><input class="text-input" type="email" placeholder=""></div>
+          </div>
+          <div class="row">
+            <div class="row-label">Mobile</div>
+            <div class="row-val"><input class="text-input" type="tel" placeholder=""></div>
+          </div>
+          <div class="row">
+            <div class="row-label">Notification method</div>
+            <div class="row-val">
+              <div class="tog-group">
+                <button class="tog" onclick="togClick(this,'.tog-group-nm')">Email only</button>
+                <button class="tog on" onclick="togClick(this,'.tog-group-nm')">Email and SMS</button>
+              </div>
+            </div>
+          </div>
+          <div class="row">
+            <div class="row-label">SMS notifications</div>
+            <div class="row-val">
+              <div class="tog-group">
+                <button class="tog on" onclick="togClick(this,'.tog-group-sms')">Any time</button>
+                <button class="tog" onclick="togClick(this,'.tog-group-sms')">During business hours</button>
+              </div>
+            </div>
+          </div>
+          <div class="row" style="align-items:flex-start">
+            <div class="row-label blue">Customer Range <span class="new-tag">NEW</span></div>
+            <div class="row-val">
+              <!-- Mode toggle -->
+              <div class="tog-group" style="margin-bottom:10px" id="mode-tog">
+                <button class="tog" id="btn-km" onclick="setMode('km')">Max distance from store</button>
+                <button class="tog on" id="btn-time" onclick="setMode('time')">Max travel time</button>
+              </div>
+
+              <!-- KM mode (hidden by default) -->
+              <div id="km-controls" style="display:none;align-items:center;gap:10px;margin-bottom:12px">
+                <label style="font-size:12px;color:#555">Max distance:</label>
+                <input type="range" min="5" max="100" value="50" step="5" id="kmslider" oninput="document.getElementById('kmval').textContent=this.value+' km'">
+                <span style="font-size:13px;font-weight:600;color:#1a6ec7;min-width:50px" id="kmval">50 km</span>
+              </div>
+
+              <!-- Time mode -->
+              <div id="time-controls">
+                <div class="range-row">
+                  <label>Travel time:</label>
+                  <input type="range" min="10" max="60" value="20" step="5" id="tslider" oninput="onSlider(this.value)">
+                  <span class="range-val" id="tval">20 mins</span>
+                </div>
+                <div class="map-wrap">
+                  <canvas class="map-canvas" id="mc"></canvas>
+                  <div class="map-ui-top">
+                    <div class="map-btn on" id="btn-drive" onclick="setTravel('drive')">Driving</div>
+                    <div class="map-btn" id="btn-walk" onclick="setTravel('walk')">Walking</div>
+                  </div>
+                  <div class="map-legend">
+                    <div class="leg"><div class="leg-sq" style="background:rgba(26,110,199,0.22);border:1.5px solid #1a6ec7"></div><span id="leg-label">20 min driving zone</span></div>
+                    <div class="leg"><div class="leg-sq" style="background:#e8001c;border-radius:50%"></div>Your store</div>
+                    <div class="leg"><div class="leg-sq" style="background:#f0c040;border:1px solid #c8a000"></div>Motorway</div>
+                  </div>
+                  <div class="map-credit">Illustrative — real zones via Google Maps API</div>
+                </div>
+                <div class="helper">Zone follows roads and traffic — stretches further along motorways, tighter through suburbs. Real implementation uses Google Maps Directions API to compute the isochrone per store location.</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="section-label">Store contact details</div>
+        <div class="card">
+          <div class="row">
+            <div class="row-label">Address</div>
+            <div class="row-val"><input class="text-input" type="text" value="Bellagio, 30 Baywater Dr, Wentworth Point NSW 2127, Australia"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+// --- State ---
+let travelMode = 'drive';
+let mins = 20;
+
+// --- Toggle helpers ---
+function togClick(btn, groupSel) {
+  const grp = btn.closest('.tog-group');
+  grp.querySelectorAll('.tog').forEach(b => b.classList.remove('on'));
+  btn.classList.add('on');
+}
+
+function setMode(mode) {
+  const kmC = document.getElementById('km-controls');
+  const timeC = document.getElementById('time-controls');
+  document.getElementById('btn-km').classList.toggle('on', mode === 'km');
+  document.getElementById('btn-time').classList.toggle('on', mode === 'time');
+  kmC.style.display = mode === 'km' ? 'flex' : 'none';
+  timeC.style.display = mode === 'time' ? 'block' : 'none';
+}
+
+function setTravel(mode) {
+  travelMode = mode;
+  document.getElementById('btn-drive').classList.toggle('on', mode === 'drive');
+  document.getElementById('btn-walk').classList.toggle('on', mode === 'walk');
+  updateLegend();
+  draw();
+}
+
+function onSlider(v) {
+  mins = parseInt(v);
+  document.getElementById('tval').textContent = v + ' mins';
+  updateLegend();
+  draw();
+}
+
+function updateLegend() {
+  document.getElementById('leg-label').textContent = mins + ' min ' + travelMode + 'ing zone';
+}
+
+// --- Map canvas ---
+const canvas = document.getElementById('mc');
+const ctx = canvas.getContext('2d');
+
+function resizeCanvas() {
+  const rect = canvas.parentElement.getBoundingClientRect();
+  canvas.width = rect.width * window.devicePixelRatio;
+  canvas.height = rect.height * window.devicePixelRatio;
+  ctx.scale(window.devicePixelRatio, window.devicePixelRatio);
+  draw();
+}
+
+function rr(x,y,w,h,r) {
+  ctx.beginPath();
+  ctx.moveTo(x+r,y);ctx.lineTo(x+w-r,y);ctx.arcTo(x+w,y,x+w,y+r,r);
+  ctx.lineTo(x+w,y+h-r);ctx.arcTo(x+w,y+h,x+w-r,y+h,r);
+  ctx.lineTo(x+r,y+h);ctx.arcTo(x,y+h,x,y+h-r,r);
+  ctx.lineTo(x,y+r);ctx.arcTo(x,y,x+r,y,r);
+  ctx.closePath();
+}
+
+function draw() {
+  const el = canvas.parentElement;
+  const W = el.clientWidth, H = el.clientHeight;
+
+  ctx.save();
+  ctx.setTransform(1,0,0,1,0,0);
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+  ctx.restore();
+
+  // Map base
+  ctx.fillStyle = '#e8ecf0';
+  ctx.fillRect(0,0,W,H);
+
+  // Suburb blocks
+  const blocks = [
+    [15,8,140,72],[155,6,280,70],[295,10,415,70],[430,6,555,70],[570,8,W-5,70],
+    [15,100,128,162],[150,96,272,160],[292,106,412,164],[430,98,552,160],[572,100,W-5,162],
+    [15,188,140,248],[155,190,276,248],[292,184,412,248],[430,188,552,248],[572,190,W-5,248],
+    [15,272,140,H-5],[155,274,276,H-5],[292,270,412,H-5]
+  ];
+  blocks.forEach(b => {
+    ctx.fillStyle = '#ccd6de';
+    ctx.fillRect(b[0],b[1],b[2]-b[0],b[3]-b[1]);
+  });
+
+  // Grid
+  ctx.strokeStyle = '#bcc8d0'; ctx.lineWidth = 0.4;
+  for(let x=0;x<W;x+=52){ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,H);ctx.stroke()}
+  for(let y=0;y<H;y+=48){ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(W,y);ctx.stroke()}
+
+  // Motorway
+  ctx.strokeStyle = '#e0b820'; ctx.lineWidth = 7;
+  ctx.beginPath(); ctx.moveTo(0,112); ctx.bezierCurveTo(W*0.35,106,W*0.65,102,W,96); ctx.stroke();
+  ctx.strokeStyle = '#f5d030'; ctx.lineWidth = 4;
+  ctx.beginPath(); ctx.moveTo(0,112); ctx.bezierCurveTo(W*0.35,106,W*0.65,102,W,96); ctx.stroke();
+
+  // Secondary roads
+  [[0,148,W,142],[0,198,W,194],[0,260,W,257]].forEach(r => {
+    ctx.strokeStyle='#bec8d0';ctx.lineWidth=2.5;
+    ctx.beginPath();ctx.moveTo(r[0],r[1]);ctx.lineTo(r[2],r[3]);ctx.stroke();
+  });
+  [W*0.17,W*0.38,W*0.6,W*0.8].forEach(x => {
+    ctx.strokeStyle='#bec8d0';ctx.lineWidth=2.5;
+    ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x+4,H);ctx.stroke();
+  });
+  [W*0.08,W*0.28,W*0.5,W*0.72,W*0.9].forEach(x => {
+    ctx.strokeStyle='#c8d4dc';ctx.lineWidth=1.5;
+    ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x+2,H);ctx.stroke();
+  });
+
+  // Suburb labels
+  const labels = [
+    [22,46,'Rhodes'],[160,42,'Meadowbank'],[300,42,'West Ryde'],[440,42,'Ermington'],[578,42,'Parramatta'],
+    [22,136,'Concord'],[160,132,'Homebush W'],[438,132,'Silverwater'],[578,132,'Granville'],
+    [22,222,'Strathfield'],[160,220,'Homebush'],[298,220,'Auburn'],[438,220,'Merrylands'],
+  ];
+  ctx.font = '500 10.5px -apple-system,sans-serif';
+  labels.forEach(l => {
+    const tw = ctx.measureText(l[2]).width;
+    ctx.fillStyle = 'rgba(255,255,255,0.72)';
+    ctx.fillRect(l[0]-2, l[1]-12, tw+6, 15);
+    ctx.fillStyle = '#5a6e7a';
+    ctx.fillText(l[2], l[0], l[1]);
+  });
+
+  // Isochrone
+  const sx = W*0.27, sy = H*0.52;
+  const pct = (mins-10)/(60-10);
+  // Walking = tighter zone
+  const scale = travelMode === 'walk' ? 0.45 : 1.0;
+  const rx = (90 + pct*260) * scale;
+  const ry = (55 + pct*80) * scale;
+
+  // Shape: biased east along motorway
+  const shape = [
+    [0,-1.0],[0.28,-1.05],[0.65,-0.92],[1.05,-0.65],[1.38,-0.28],[1.48,0.18],
+    [1.32,0.62],[0.95,0.92],[0.48,1.06],[0.0,1.0],[-0.42,0.84],[-0.72,0.54],
+    [-0.82,0.14],[-0.72,-0.34],[-0.48,-0.74],[-0.18,-0.97]
+  ];
+  const pts = shape.map(p => [sx+p[0]*rx, sy+p[1]*ry]);
+
+  // Fill with semi-transparent overlay
+  ctx.save();
+  ctx.globalAlpha = 1;
+  const offscreen = document.createElement('canvas');
+  offscreen.width = W; offscreen.height = H;
+  const oc = offscreen.getContext('2d');
+  oc.beginPath();
+  oc.moveTo(pts[0][0],pts[0][1]);
+  for(let i=1;i<pts.length;i++){
+    const cur=pts[i], prev=pts[(i-1+pts.length)%pts.length], next=pts[(i+1)%pts.length];
+    oc.quadraticCurveTo(prev[0]+(cur[0]-prev[0])*0.7,prev[1]+(cur[1]-prev[1])*0.7,(cur[0]+next[0])/2,(cur[1]+next[1])/2);
+  }
+  oc.closePath();
+  oc.fillStyle = 'rgba(26,110,199,0.18)';
+  oc.fill();
+  ctx.drawImage(offscreen,0,0);
+  ctx.restore();
+
+  // Border
+  ctx.beginPath();
+  ctx.moveTo(pts[0][0],pts[0][1]);
+  for(let i=1;i<pts.length;i++){
+    const cur=pts[i],prev=pts[(i-1+pts.length)%pts.length],next=pts[(i+1)%pts.length];
+    ctx.quadraticCurveTo(prev[0]+(cur[0]-prev[0])*0.7,prev[1]+(cur[1]-prev[1])*0.7,(cur[0]+next[0])/2,(cur[1]+next[1])/2);
+  }
+  ctx.closePath();
+  ctx.strokeStyle = '#1a6ec7';
+  ctx.lineWidth = 2;
+  ctx.setLineDash([6,4]);
+  ctx.stroke();
+  ctx.setLineDash([]);
+
+  // Store pin
+  ctx.beginPath(); ctx.arc(sx,sy,9,0,Math.PI*2);
+  ctx.fillStyle = '#e8001c'; ctx.fill();
+  ctx.strokeStyle = '#fff'; ctx.lineWidth = 2; ctx.stroke();
+  ctx.fillStyle = '#fff'; ctx.font = 'bold 7px sans-serif'; ctx.textAlign = 'center';
+  ctx.fillText('AH',sx,sy+2.5);
+  ctx.textAlign = 'left';
+
+  // Pin label
+  const pl = 'Wentworth Point';
+  const pw = ctx.measureText(pl).width;
+  ctx.font = '500 10.5px -apple-system,sans-serif';
+  rr(sx+12,sy-9,pw+12,18,4);
+  ctx.fillStyle = 'rgba(255,255,255,0.93)'; ctx.fill();
+  ctx.fillStyle = '#1a1a2e';
+  ctx.fillText(pl, sx+18, sy+3);
+}
+
+// Init
+window.addEventListener('load', () => {
+  resizeCanvas();
+  updateLegend();
+});
+window.addEventListener('resize', resizeCanvas);
+</script>
+</body>
+</html>
